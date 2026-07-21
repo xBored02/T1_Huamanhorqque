@@ -1,5 +1,6 @@
 package edu.pe.cibertec.taller.servicio;
 
+import edu.pe.cibertec.taller.excepcion.EspecialidadIncorrectaException;
 import edu.pe.cibertec.taller.excepcion.MecanicoNoEncontradoException;
 import edu.pe.cibertec.taller.modelo.Cita;
 import edu.pe.cibertec.taller.modelo.EstadoCita;
@@ -104,10 +105,23 @@ class ServicioCitasImplTest {
 	@DisplayName("Agendar cuando la especialidad no coincide lanza EspecialidadIncorrectaException")
 	void agendarConEspecialidadIncorrecta() {
 		// Arrange
-		// TODO
+		Long Idmecanico = 1L;
+		LocalDateTime fechaCita = LocalDateTime.of(2026, 9, 13, 10, 0);
+
+		Mecanico mecanico = new Mecanico();
+		mecanico.setId(Idmecanico);
+		mecanico.setEspecialidad(TipoServicio.CAMBIO_ACEITE);
+
+		when(repositorioMecanicos.findById(Idmecanico)).thenReturn(Optional.of(mecanico));
 
 		// Act y Assert
-		// TODO
+		assertThrows(EspecialidadIncorrectaException.class, () -> {
+			servicioCitas.agendarCita(Idmecanico, "HUA-573", TipoServicio.REPARACION_MOTOR, fechaCita);
+		});
+
+		// Verificar que nada se guardó ni se notificó
+		verify(repositorioCitas, never()).save(any(Cita.class));
+		verify(servicioNotificaciones, never()).notificarCitaAgendada(any(Cita.class));
 	}
 
 	@Test
