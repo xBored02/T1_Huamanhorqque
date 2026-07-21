@@ -1,5 +1,6 @@
 package edu.pe.cibertec.taller.servicio;
 
+import edu.pe.cibertec.taller.excepcion.MecanicoNoEncontradoException;
 import edu.pe.cibertec.taller.modelo.Cita;
 import edu.pe.cibertec.taller.modelo.EstadoCita;
 import edu.pe.cibertec.taller.modelo.Mecanico;
@@ -69,6 +70,7 @@ class ServicioCitasImplTest {
 
 		// Assert
 		// TODO: verificar estado, duracion, save y notificacion
+
 		assertNotNull(resultado);
 		assertEquals(EstadoCita.PROGRAMADA, resultado.getEstado());
 		assertEquals(TipoServicio.CAMBIO_ACEITE.getDuracionHoras(), resultado.getDuracionHoras());
@@ -80,11 +82,22 @@ class ServicioCitasImplTest {
 	@Test
 	@DisplayName("Agendar con un mecanico inexistente lanza MecanicoNoEncontradoException")
 	void agendarConMecanicoInexistente() {
+
 		// Arrange
-		// TODO
+		Long idMecanico = 99L;
+		LocalDateTime fechaCita = LocalDateTime.of(2026, 9, 13, 10, 0);
+
+		when(repositorioMecanicos.findById(idMecanico)).thenReturn(Optional.empty());
 
 		// Act y Assert
-		// TODO
+		assertThrows(MecanicoNoEncontradoException.class, () -> {
+			servicioCitas.agendarCita(idMecanico, "HUA-573", TipoServicio.CAMBIO_ACEITE, fechaCita);
+		});
+
+		// Verificar que nada se guardó ni se notificó
+		verify(repositorioCitas, never()).save(any(Cita.class));
+		verify(servicioNotificaciones, never()).notificarCitaAgendada(any(Cita.class));
+
 	}
 
 	@Test
