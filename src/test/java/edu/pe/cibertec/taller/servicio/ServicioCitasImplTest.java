@@ -1,5 +1,6 @@
 package edu.pe.cibertec.taller.servicio;
 
+import edu.pe.cibertec.taller.excepcion.CitaNoCancelableException;
 import edu.pe.cibertec.taller.excepcion.EspecialidadIncorrectaException;
 import edu.pe.cibertec.taller.excepcion.HorarioNoPermitidoException;
 import edu.pe.cibertec.taller.excepcion.MecanicoNoEncontradoException;
@@ -302,13 +303,22 @@ class ServicioCitasImplTest {
 	}
 
 	@Test
-	@DisplayName("Cancelar una cita que ya fue cancelada lanza CitaNoCancelableException")
-	void cancelarCitaYaCancelada() {
+	@DisplayName("Cancelar una cita que ya fue atendida lanza CitaNoCancelableException")
+	void cancelarCitaYaAtendida() {
 		// Arrange
-		// TODO
+		Long idCita = 1L;
+
+		Cita cita = new Cita();
+		cita.setId(idCita);
+		cita.setPlacaVehiculo("HUA-573");
+		cita.setEstado(EstadoCita.ATENDIDA);
+
+		when(repositorioCitas.findById(idCita)).thenReturn(Optional.of(cita));
 
 		// Act y Assert
-		// TODO
+		assertThrows(CitaNoCancelableException.class, () -> {
+			servicioCitas.cancelarCita(idCita);
+		});
 	}
 
 	@Test
