@@ -1,5 +1,9 @@
 package edu.pe.cibertec.taller.servicio;
 
+import edu.pe.cibertec.taller.modelo.Cita;
+import edu.pe.cibertec.taller.modelo.EstadoCita;
+import edu.pe.cibertec.taller.modelo.Mecanico;
+import edu.pe.cibertec.taller.modelo.TipoServicio;
 import edu.pe.cibertec.taller.repositorio.RepositorioCitas;
 import edu.pe.cibertec.taller.repositorio.RepositorioMecanicos;
 import edu.pe.cibertec.taller.servicio.impl.ServicioCitasImpl;
@@ -11,6 +15,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ServicioCitasImplTest {
@@ -33,20 +44,37 @@ class ServicioCitasImplTest {
 	void inicializar() {
 		servicioCitas = new ServicioCitasImpl(repositorioMecanicos, repositorioCitas,
 				proveedorFechaHora, servicioNotificaciones);
-		// TODO: crear aqui los datos comunes que necesiten los tests
+
 	}
 
 	@Test
 	@DisplayName("Agendar una cita valida la guarda, notifica y la retorna en estado PROGRAMADA")
 	void agendarCitaExitosa() {
+
 		// Arrange
-		// TODO
+		Long idMecanico = 1L;
+		Mecanico mecanico = new Mecanico();
+		mecanico.setId(idMecanico);
+		mecanico.setNombre("Jubert Huamanhorqque");
+		mecanico.setEspecialidad(TipoServicio.CAMBIO_ACEITE);
+		LocalDateTime fechaCita = LocalDateTime.of(2026, 9, 13, 10, 0);
+
+		when(repositorioMecanicos.findById(idMecanico)).thenReturn(Optional.of(mecanico));
+		when(proveedorFechaHora.ahora()).thenReturn(LocalDateTime.of(2026, 9, 12, 8, 0));
+		when(repositorioCitas.save(any(Cita.class))).thenAnswer(inv -> inv.getArgument(0));
 
 		// Act
-		// TODO
+
+		Cita resultado = servicioCitas.agendarCita(idMecanico, "HUA-573", TipoServicio.CAMBIO_ACEITE, fechaCita);
 
 		// Assert
 		// TODO: verificar estado, duracion, save y notificacion
+		assertNotNull(resultado);
+		assertEquals(EstadoCita.PROGRAMADA, resultado.getEstado());
+		assertEquals(TipoServicio.CAMBIO_ACEITE.getDuracionHoras(), resultado.getDuracionHoras());
+		verify(repositorioCitas, times(1)).save(any(Cita.class));
+		verify(servicioNotificaciones, times(1)).notificarCitaAgendada(any(Cita.class));
+
 	}
 
 	@Test
