@@ -271,7 +271,24 @@ class ServicioCitasImplTest {
 	@Test
 	@DisplayName("Cancelar con menos de 24 horas aplica una penalidad de 50.00")
 	void cancelarConAvisoTardio() {
+		// Arrange
+		Long idCita = 1L;
+		LocalDateTime fechaCita = LocalDateTime.of(2026, 9, 13, 10, 0);
 
+		Cita cita = new Cita();
+		cita.setId(idCita);
+		cita.setPlacaVehiculo("HUA-573");
+		cita.setEstado(EstadoCita.PROGRAMADA);
+		cita.setFechaHoraInicio(fechaCita);
+
+		when(repositorioCitas.findById(idCita)).thenReturn(Optional.of(cita));
+		when(proveedorFechaHora.ahora()).thenReturn(LocalDateTime.of(2026, 9, 13, 8, 0));
+
+		// Act
+		ResultadoCancelacion resultado = servicioCitas.cancelarCita(idCita);
+		// Assert
+		assertEquals(50.0, resultado.getMontoPenalidad());
+		assertEquals(EstadoCita.CANCELADA, cita.getEstado());
 	}
 
 	@Test
