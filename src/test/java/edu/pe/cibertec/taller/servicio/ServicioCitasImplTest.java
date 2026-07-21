@@ -1,6 +1,7 @@
 package edu.pe.cibertec.taller.servicio;
 
 import edu.pe.cibertec.taller.excepcion.EspecialidadIncorrectaException;
+import edu.pe.cibertec.taller.excepcion.HorarioNoPermitidoException;
 import edu.pe.cibertec.taller.excepcion.MecanicoNoEncontradoException;
 import edu.pe.cibertec.taller.modelo.Cita;
 import edu.pe.cibertec.taller.modelo.EstadoCita;
@@ -124,27 +125,93 @@ class ServicioCitasImplTest {
 		verify(servicioNotificaciones, never()).notificarCitaAgendada(any(Cita.class));
 	}
 
+	//Según las reglas de negocio en el README el horario de atención
+	//a los servicios pesados es entre 8 AM y hasta antes de las 12 PM
+	//La pregunta manda 7, 8 , 11 y 12
+	// 7 y 12 rechazados; 8 y 11 aceptados
+
 	@Test
-	@DisplayName("Un servicio pesado a las 15:00 se rechaza con HorarioNoPermitidoException")
-	void agendarServicioPesadoEnLaTarde() {
+	@DisplayName("Un servicio pesado a las 07:00 se rechaza con HorarioNoPermitidoException")
+	void agendarServicioPesado7Am() {
 		// Arrange
-		// TODO
+		Long idMecanico = 1L;
+		LocalDateTime fechaCita = LocalDateTime.of(2026, 9, 13, 7, 0);
+
+		Mecanico mecanico = new Mecanico();
+		mecanico.setId(idMecanico);
+		mecanico.setEspecialidad(TipoServicio.REPARACION_MOTOR);
+
+		when(repositorioMecanicos.findById(idMecanico)).thenReturn(Optional.of(mecanico));
 
 		// Act y Assert
-		// TODO
+		assertThrows(HorarioNoPermitidoException.class, () -> {
+			servicioCitas.agendarCita(idMecanico, "HUA-573", TipoServicio.REPARACION_MOTOR, fechaCita);
+		});
+		verify(repositorioCitas, never()).save(any(Cita.class));
 	}
 
 	@Test
-	@DisplayName("Un servicio pesado a las 09:00 se acepta y se guarda")
-	void agendarServicioPesadoEnLaManana() {
+	@DisplayName("Un servicio pesado a las 08:00 se acepta y se guarda")
+	void agendarServicioPesado8Am() {
 		// Arrange
-		// TODO
+		Long idMecanico = 1L;
+		LocalDateTime fechaCita = LocalDateTime.of(2026, 9, 13, 8, 0);
 
-		// Act
-		// TODO
+		Mecanico mecanico = new Mecanico();
+		mecanico.setId(idMecanico);
+		mecanico.setEspecialidad(TipoServicio.REPARACION_MOTOR);
 
-		// Assert
-		// TODO
+		when(repositorioMecanicos.findById(idMecanico)).thenReturn(Optional.of(mecanico));
+		when(proveedorFechaHora.ahora()).thenReturn(LocalDateTime.of(2026, 9, 12, 8, 0));
+
+		// Act y Assert
+
+		assertDoesNotThrow(() -> {
+			servicioCitas.agendarCita(idMecanico, "HUA-573", TipoServicio.REPARACION_MOTOR, fechaCita);
+		});
+		verify(repositorioCitas, times(1)).save(any(Cita.class));
+	}
+
+	@Test
+	@DisplayName("Un servicio pesado a las 11:00 se acepta y se guarda")
+	void agendarServicioPesado11Am() {
+		// Arrange
+		Long idMecanico = 1L;
+		LocalDateTime fechaCita = LocalDateTime.of(2026, 9, 13, 11, 0);
+
+		Mecanico mecanico = new Mecanico();
+		mecanico.setId(idMecanico);
+		mecanico.setEspecialidad(TipoServicio.REPARACION_MOTOR);
+
+		when(repositorioMecanicos.findById(idMecanico)).thenReturn(Optional.of(mecanico));
+		when(proveedorFechaHora.ahora()).thenReturn(LocalDateTime.of(2026, 9, 12, 8, 0));
+
+		// Act y Assert
+
+		assertDoesNotThrow(() -> {
+			servicioCitas.agendarCita(idMecanico, "HUA-573", TipoServicio.REPARACION_MOTOR, fechaCita);
+		});
+		verify(repositorioCitas, times(1)).save(any(Cita.class));
+	}
+
+	@Test
+	@DisplayName("Un servicio pesado a las 12:00 se rechaza con HorarioNoPermitidoException")
+	void agendarServicioPesado12Pm() {
+		// Arrange
+		Long idMecanico = 1L;
+		LocalDateTime fechaCita = LocalDateTime.of(2026, 9, 13, 12, 0);
+
+		Mecanico mecanico = new Mecanico();
+		mecanico.setId(idMecanico);
+		mecanico.setEspecialidad(TipoServicio.REPARACION_MOTOR);
+
+		when(repositorioMecanicos.findById(idMecanico)).thenReturn(Optional.of(mecanico));
+
+		// Act y Assert
+		assertThrows(HorarioNoPermitidoException.class, () -> {
+			servicioCitas.agendarCita(idMecanico, "HUA-573", TipoServicio.REPARACION_MOTOR, fechaCita);
+		});
+		verify(repositorioCitas, never()).save(any(Cita.class));
 	}
 
 	@Test
