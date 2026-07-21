@@ -105,18 +105,18 @@ class ServicioCitasImplTest {
 	@DisplayName("Agendar cuando la especialidad no coincide lanza EspecialidadIncorrectaException")
 	void agendarConEspecialidadIncorrecta() {
 		// Arrange
-		Long Idmecanico = 1L;
+		Long idMecanico = 1L;
 		LocalDateTime fechaCita = LocalDateTime.of(2026, 9, 13, 10, 0);
 
 		Mecanico mecanico = new Mecanico();
-		mecanico.setId(Idmecanico);
+		mecanico.setId(idMecanico);
 		mecanico.setEspecialidad(TipoServicio.CAMBIO_ACEITE);
 
-		when(repositorioMecanicos.findById(Idmecanico)).thenReturn(Optional.of(mecanico));
+		when(repositorioMecanicos.findById(idMecanico)).thenReturn(Optional.of(mecanico));
 
 		// Act y Assert
 		assertThrows(EspecialidadIncorrectaException.class, () -> {
-			servicioCitas.agendarCita(Idmecanico, "HUA-573", TipoServicio.REPARACION_MOTOR, fechaCita);
+			servicioCitas.agendarCita(idMecanico, "HUA-573", TipoServicio.REPARACION_MOTOR, fechaCita);
 		});
 
 		// Verificar que nada se guardó ni se notificó
